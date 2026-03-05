@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: hoothatshow
+      POSTGRES_USER: hoothatshow
+      POSTGRES_PASSWORD: hoothatshow
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgres://hoothatshow:hoothatshow@db:5432/hoothatshow
+      SECRET_KEY: dev-secret
+      SERPAPI_KEY: ${SERPAPI_KEY}
+      QWEN_SERVICE_PORT: 8001
+      FRONTEND_BASE_URL: http://localhost:5173
+      ALLOWED_HOSTS: localhost,127.0.0.1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  llm-service:
+    build:
+      context: ./llm-service
+    profiles: ["llm"]
+    environment:
+      MODEL_PATH: ${MODEL_PATH}
+      QWEN_SERVICE_PORT: 8001
+    ports:
+      - "8001:8001"
+
+volumes:
+  db_data:

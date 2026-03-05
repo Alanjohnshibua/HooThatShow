@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+env/
+venv/
+frontend/build/
+frontend/.dart_tool/
+frontend/.metadata
+backend/db.sqlite3
+*.log
